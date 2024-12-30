@@ -1,0 +1,23 @@
+ ptxas -arch=sm_80 -v _attn_fwd.ptx -o _attn_fwd.cubin
+ptxas info    : 11 bytes gmem
+ptxas info    : Compiling entry function '_attn_fwd' for 'sm_80'
+ptxas info    : Function properties for _attn_fwd
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 168 registers, 504 bytes cmem[0]
+
+
+ptxas -arch=sm_80 -v _attn_bwd_dq.ptx -o _attn_bwd_dq.cubin
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_attn_bwd_dq' for 'sm_80'
+ptxas info    : Function properties for _attn_bwd_dq
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 255 registers, 512 bytes cmem[0]
+
+
+ ptxas -arch=sm_80 -v _attn_bwd_dk_dv.ptx -o _attn_bwd_dk_dv.cubin
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_attn_bwd_dk_dv' for 'sm_80'
+ptxas info    : Function properties for _attn_bwd_dk_dv
+    128 bytes stack frame, 152 bytes spill stores, 128 bytes spill loads
+ptxas info    : Used 255 registers, 492 bytes cmem[0]
+

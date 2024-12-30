@@ -22,8 +22,7 @@ I also found other flash-attn triton implementations but I don't think they fit 
 
 That is why I decided to go with https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html. 
 
-I think this is the biggest problem right now. 
-
+I will try to work around by implementing mask-loading to make it fit all sequence lengths. 
 
 ### Problem 2: Performance issue: Speed 
 In speed_benchmark.py, I include some profiled results at the end. The forward pass is good, even better than DS4Sci_EvoformerAttention. However, the backward pass is very slow, slower than DS4Sci_EvoformerAttention and normal pytorch implementation. So the overall fwd+bwd speed is similar to pytorch implementation.
@@ -34,4 +33,6 @@ I did some analysis to find out that in the backward pass, the tl.atomic_add is 
 ### Problem 3: Performance issue: Memory
 In memory_benchmark.py, I include profiled results at the end. Current Triton EvoformerAttention is just slightly better than PyTorch implementation. 
 
-I think current Triton EvoformerAttention implementation just mimics Flash-attention in tiling operations. I just allocate HBM memory for input and output in the code (via torch.empty()). All operations are loaded and done in SRAM. However, the max_memory_allocated rises from 0.0588 GB to 0.2972 GB after running the kernel. So I'm currently investigating why this is the case (currently thinking about register spilling). 
+I think current Triton EvoformerAttention implementation just mimics Flash-attention in tiling operations. I just allocate HBM memory for input and output in the code (via torch.empty()). All operations are loaded and done in SRAM. However, the max_memory_allocated rises from 0.0588 GB to 0.2972 GB after running the kernel. So, I guess the problem is register spilling (see ptxas.log). 
+
+I have tried reducing the block size, but it didn't improve the results. 
