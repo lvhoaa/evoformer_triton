@@ -40,7 +40,6 @@ def _attn_fwd_inner(
     EVEN_KV: tl.constexpr,
     BLOCK_SIZE_Q: tl.constexpr,
     BLOCK_SIZE_KV: tl.constexpr,
-    STAGE: tl.constexpr,
     offs_q: tl.constexpr,
     offs_kv: tl.constexpr,
     SEQ_LEN: tl.constexpr,
@@ -173,7 +172,6 @@ def _attn_fwd(
     EVEN_KV: tl.constexpr,
     BLOCK_SIZE_Q: tl.constexpr,
     BLOCK_SIZE_KV: tl.constexpr,
-    STAGE: tl.constexpr,
 ):
     tl.static_assert(BLOCK_SIZE_KV <= DIM)
 
@@ -278,7 +276,6 @@ def _attn_fwd(
         EVEN_KV,
         BLOCK_SIZE_Q,
         BLOCK_SIZE_KV,
-        4 - STAGE,
         offs_q,
         offs_kv,
         SEQ_LEN,
@@ -367,7 +364,6 @@ def _attn_bwd_dq(
     BLOCK_Q: tl.constexpr,
     BLOCK_KV: tl.constexpr,
     DIM: tl.constexpr,
-    STAGE: tl.constexpr,
 ):
     index_batch_head_msa = tl.program_id(2)
     index_batch_head = index_batch_head_msa // N_SEQ
@@ -516,7 +512,6 @@ def _attn_bwd_dk_dv(
     BLOCK_Q: tl.constexpr,
     BLOCK_KV: tl.constexpr,
     DIM: tl.constexpr,
-    STAGE: tl.constexpr,
 ):
     index_batch_head_msa = tl.program_id(2)
     index_batch_head = index_batch_head_msa // N_SEQ
@@ -657,7 +652,6 @@ class EvoformerAttention(torch.autograd.Function):
         pair_bias = pair_bias.reshape((BATCH_SIZE, HEAD, 1, SEQ_LEN, SEQ_LEN))  
         
         O = torch.empty_like(Q)
-        stage = 1
         
         # Tuning for AMD target
         extra_kern_args = {}
@@ -726,7 +720,6 @@ class EvoformerAttention(torch.autograd.Function):
             N_SEQ=N_SEQ,
             SEQ_LEN=SEQ_LEN,
             DIM=DIM,
-            STAGE=stage,
             **extra_kern_args
         )
         
@@ -778,7 +771,6 @@ class EvoformerAttention(torch.autograd.Function):
         EVEN_Q = SEQ_LEN % BLOCK_SIZE_MACRO == 0
         EVEN_KV = SEQ_LEN % BLOCK_SIZE_MICRO == 0 
 
-        stage = 1
 
         # Fix KV and iterate through all the Q blocks
         _attn_bwd_dk_dv[grid](
@@ -815,7 +807,6 @@ class EvoformerAttention(torch.autograd.Function):
             BLOCK_Q=BLOCK_SIZE_MICRO,
             BLOCK_KV=BLOCK_SIZE_MACRO,
             DIM=ctx.DIM,
-            STAGE=stage,
             num_warps=NUM_WARPS,
             num_stages=NUM_STAGES,
         )
@@ -858,7 +849,6 @@ class EvoformerAttention(torch.autograd.Function):
             BLOCK_Q=BLOCK_SIZE_MACRO,
             BLOCK_KV=BLOCK_SIZE_MICRO,
             DIM=ctx.DIM,
-            STAGE=stage,
             num_warps=NUM_WARPS,
             num_stages=NUM_STAGES,
         )
