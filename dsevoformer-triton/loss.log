@@ -1,0 +1,970 @@
+- STANDARD:
+
+Memory usage at start:   | mem_allocated: 7.0962 GB | max_mem_allocated: 7.0962 GB | cache_allocated: 11.0117 GB | max_cache_allocated: 11.0117 GB
+Step 0, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1891, 3])
+molecule_ids torch.Size([1, 247])
+molecule_atom_lens torch.Size([1, 247])
+atompair_inputs torch.Size([1, 71, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 247, 5])
+is_molecule_types torch.Size([1, 247, 5])
+is_molecule_mod torch.Size([1, 247, 4])
+additional_msa_feats torch.Size([1, 1, 247, 2])
+additional_token_feats torch.Size([1, 247, 33])
+msa torch.Size([1, 1, 247, 32])
+token_bonds torch.Size([1, 247, 247])
+atom_ids torch.Size([1, 1891])
+atom_parent_ids torch.Size([1, 1891])
+atompair_ids torch.Size([1, 1891, 1891])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1891, 3])
+missing_atom_mask torch.Size([1, 1891])
+molecule_atom_indices torch.Size([1, 247])
+distogram_atom_indices torch.Size([1, 247])
+atom_indices_for_frame torch.Size([1, 247, 3])
+token_constraints torch.Size([1, 247, 247, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 0, Accum 1 | Forward pass...
+Step 0, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+ Step 0 | Optimization...
+Step 0 | EMA update...
+Step 0 | Scheduler update...
+Step 1 | Logging...
+Step 1 | Train loss: 7.976245 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.8497 GB | max_mem_allocated: 27.6655 GB | cache_allocated: 21.3262 GB | max_cache_allocated: 28.4805 GB
+Time taken for each training step:  32.415581941604614
+Step 1, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1941, 3])
+molecule_ids torch.Size([1, 243])
+molecule_atom_lens torch.Size([1, 243])
+atompair_inputs torch.Size([1, 72, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 243, 5])
+is_molecule_types torch.Size([1, 243, 5])
+is_molecule_mod torch.Size([1, 243, 4])
+additional_msa_feats torch.Size([1, 1, 243, 2])
+additional_token_feats torch.Size([1, 243, 33])
+templates torch.Size([1, 4, 243, 243, 108])
+msa torch.Size([1, 1, 243, 32])
+token_bonds torch.Size([1, 243, 243])
+atom_ids torch.Size([1, 1941])
+atom_parent_ids torch.Size([1, 1941])
+atompair_ids torch.Size([1, 1941, 1941])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1941, 3])
+missing_atom_mask torch.Size([1, 1941])
+molecule_atom_indices torch.Size([1, 243])
+distogram_atom_indices torch.Size([1, 243])
+atom_indices_for_frame torch.Size([1, 243, 3])
+resolved_labels torch.Size([1, 1941])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 243, 243, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 1, Accum 1 | Forward pass...
+Step 1, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 1 | Optimization...
+Step 1 | EMA update...
+Step 1 | Scheduler update...
+Step 2 | Logging...
+Step 2 | Train loss: 7.739899 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.9693 GB | max_mem_allocated: 31.1605 GB | cache_allocated: 24.3906 GB | max_cache_allocated: 31.8379 GB
+Time taken for each training step:  15.38700795173645
+Step 2, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2065, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 77, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2065])
+atom_parent_ids torch.Size([1, 2065])
+atompair_ids torch.Size([1, 2065, 2065])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2065, 3])
+missing_atom_mask torch.Size([1, 2065])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2065])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 2, Accum 1 | Forward pass...
+Step 2, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 2 | Optimization...
+Step 2 | EMA update...
+Step 2 | Scheduler update...
+Step 3 | Logging...
+Step 3 | Train loss: 7.638532 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0311 GB | max_mem_allocated: 32.4415 GB | cache_allocated: 25.2344 GB | max_cache_allocated: 32.9961 GB
+Time taken for each training step:  12.56731128692627
+Step 3, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1000, 3])
+molecule_ids torch.Size([1, 129])
+molecule_atom_lens torch.Size([1, 129])
+atompair_inputs torch.Size([1, 38, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 129, 5])
+is_molecule_types torch.Size([1, 129, 5])
+is_molecule_mod torch.Size([1, 129, 4])
+additional_msa_feats torch.Size([1, 1, 129, 2])
+additional_token_feats torch.Size([1, 129, 33])
+templates torch.Size([1, 4, 129, 129, 108])
+msa torch.Size([1, 1, 129, 32])
+token_bonds torch.Size([1, 129, 129])
+atom_ids torch.Size([1, 1000])
+atom_parent_ids torch.Size([1, 1000])
+atompair_ids torch.Size([1, 1000, 1000])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1000, 3])
+missing_atom_mask torch.Size([1, 1000])
+molecule_atom_indices torch.Size([1, 129])
+distogram_atom_indices torch.Size([1, 129])
+atom_indices_for_frame torch.Size([1, 129, 3])
+resolved_labels torch.Size([1, 1000])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 129, 129, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 3, Accum 1 | Forward pass...
+Step 3, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 3 | Optimization...
+Step 3 | EMA update...
+Step 3 | Scheduler update...
+Step 4 | Logging...
+Step 4 | Train loss: 7.365089 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.7533 GB | max_mem_allocated: 32.4415 GB | cache_allocated: 21.1152 GB | max_cache_allocated: 32.9961 GB
+Time taken for each training step:  8.990909814834595
+Step 4, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2094, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 78, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2094])
+atom_parent_ids torch.Size([1, 2094])
+atompair_ids torch.Size([1, 2094, 2094])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2094, 3])
+missing_atom_mask torch.Size([1, 2094])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2094])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 4, Accum 1 | Forward pass...
+Step 4, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 4 | Optimization...
+Step 4 | EMA update...
+Step 4 | Scheduler update...
+Step 5 | Logging...
+Step 5 | Train loss: 7.272215 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0375 GB | max_mem_allocated: 32.4570 GB | cache_allocated: 25.3594 GB | max_cache_allocated: 32.9961 GB
+Time taken for each training step:  14.863824605941772
+Step 5, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2115, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 79, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2115])
+atom_parent_ids torch.Size([1, 2115])
+atompair_ids torch.Size([1, 2115, 2115])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2115, 3])
+missing_atom_mask torch.Size([1, 2115])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2115])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 5, Accum 1 | Forward pass...
+ Step 5, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 5 | Optimization...
+Step 5 | EMA update...
+Step 5 | Scheduler update...
+Step 6 | Logging...
+Step 6 | Train loss: 7.214846 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0387 GB | max_mem_allocated: 32.5453 GB | cache_allocated: 25.3535 GB | max_cache_allocated: 33.1250 GB
+Time taken for each training step:  13.339542150497437
+Step 6, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1983, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 74, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 1983])
+atom_parent_ids torch.Size([1, 1983])
+atompair_ids torch.Size([1, 1983, 1983])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1983, 3])
+missing_atom_mask torch.Size([1, 1983])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 6, Accum 1 | Forward pass...
+Step 6, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 6 | Optimization...
+Step 6 | EMA update...
+Step 6 | Scheduler update...
+Step 7 | Logging...
+Step 7 | Train loss: 7.268371 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.8106 GB | max_mem_allocated: 32.5453 GB | cache_allocated: 21.8906 GB | max_cache_allocated: 33.1250 GB
+Time taken for each training step:  11.077178955078125
+Step 7, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2001, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 75, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 2, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 2, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2001])
+atom_parent_ids torch.Size([1, 2001])
+atompair_ids torch.Size([1, 2001, 2001])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 2])
+atom_pos torch.Size([1, 2001, 3])
+missing_atom_mask torch.Size([1, 2001])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2001])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 7, Accum 1 | Forward pass...
+Step 7, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 7 | Optimization...
+Step 7 | EMA update...
+Step 7 | Scheduler update...
+Step 8 | Logging...
+Step 8 | Train loss: 7.212487 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0291 GB | max_mem_allocated: 32.5453 GB | cache_allocated: 25.4746 GB | max_cache_allocated: 33.1250 GB
+Time taken for each training step:  12.037190198898315
+Step 8, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1892, 3])
+molecule_ids torch.Size([1, 241])
+molecule_atom_lens torch.Size([1, 241])
+atompair_inputs torch.Size([1, 71, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 241, 5])
+is_molecule_types torch.Size([1, 241, 5])
+is_molecule_mod torch.Size([1, 241, 4])
+additional_msa_feats torch.Size([1, 1, 241, 2])
+additional_token_feats torch.Size([1, 241, 33])
+templates torch.Size([1, 4, 241, 241, 108])
+msa torch.Size([1, 1, 241, 32])
+token_bonds torch.Size([1, 241, 241])
+atom_ids torch.Size([1, 1892])
+atom_parent_ids torch.Size([1, 1892])
+atompair_ids torch.Size([1, 1892, 1892])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1892, 3])
+missing_atom_mask torch.Size([1, 1892])
+molecule_atom_indices torch.Size([1, 241])
+distogram_atom_indices torch.Size([1, 241])
+atom_indices_for_frame torch.Size([1, 241, 3])
+resolved_labels torch.Size([1, 1892])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 241, 241, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 8, Accum 1 | Forward pass...
+Step 8, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 8 | Optimization...
+Step 8 | EMA update...
+Step 8 | Scheduler update...
+Step 9 | Logging...
+Step 9 | Train loss: 7.169998 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.9698 GB | max_mem_allocated: 32.5453 GB | cache_allocated: 24.6641 GB | max_cache_allocated: 33.1250 GB
+Time taken for each training step:  9.405914306640625
+Step 9, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1125, 3])
+molecule_ids torch.Size([1, 169])
+molecule_atom_lens torch.Size([1, 169])
+atompair_inputs torch.Size([1, 42, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 169, 5])
+is_molecule_types torch.Size([1, 169, 5])
+is_molecule_mod torch.Size([1, 169, 4])
+additional_msa_feats torch.Size([1, 1, 169, 2])
+additional_token_feats torch.Size([1, 169, 33])
+templates torch.Size([1, 4, 169, 169, 108])
+msa torch.Size([1, 1, 169, 32])
+token_bonds torch.Size([1, 169, 169])
+atom_ids torch.Size([1, 1125])
+atom_parent_ids torch.Size([1, 1125])
+atompair_ids torch.Size([1, 1125, 1125])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1125, 3])
+missing_atom_mask torch.Size([1, 1125])
+molecule_atom_indices torch.Size([1, 169])
+distogram_atom_indices torch.Size([1, 169])
+atom_indices_for_frame torch.Size([1, 169, 3])
+resolved_labels torch.Size([1, 1125])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 169, 169, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 9, Accum 1 | Forward pass...
+Step 9, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 9 | Optimization...
+Step 9 | EMA update...
+Step 9 | Scheduler update...
+Step 10 | Logging...
+Step 10 | Train loss: 7.298209 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.8015 GB | max_mem_allocated: 32.5453 GB | cache_allocated: 22.2148 GB | max_cache_allocated: 33.1250 GB
+Time taken for each training step:  7.507812738418579
+
+
+
+- With EvoformerAttention: 
+
+Memory usage at start:   | mem_allocated: 7.0962 GB | max_mem_allocated: 7.0962 GB | cache_allocated: 11.0117 GB | max_cache_allocated: 11.0117 GB
+Step 0, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1891, 3])
+molecule_ids torch.Size([1, 247])
+molecule_atom_lens torch.Size([1, 247])
+atompair_inputs torch.Size([1, 71, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 247, 5])
+is_molecule_types torch.Size([1, 247, 5])
+is_molecule_mod torch.Size([1, 247, 4])
+additional_msa_feats torch.Size([1, 1, 247, 2])
+additional_token_feats torch.Size([1, 247, 33])
+msa torch.Size([1, 1, 247, 32])
+token_bonds torch.Size([1, 247, 247])
+atom_ids torch.Size([1, 1891])
+atom_parent_ids torch.Size([1, 1891])
+atompair_ids torch.Size([1, 1891, 1891])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1891, 3])
+missing_atom_mask torch.Size([1, 1891])
+molecule_atom_indices torch.Size([1, 247])
+distogram_atom_indices torch.Size([1, 247])
+atom_indices_for_frame torch.Size([1, 247, 3])
+token_constraints torch.Size([1, 247, 247, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 0, Accum 1 | Forward pass...
+    Step 0, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 0 | Optimization...
+Step 0 | EMA update...
+Step 0 | Scheduler update...
+Step 1 | Logging...
+Step 1 | Train loss: 7.992501 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.8274 GB | max_mem_allocated: 26.9148 GB | cache_allocated: 20.9727 GB | max_cache_allocated: 27.8340 GB
+Time taken for each training step:  66.5033266544342
+Step 1, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1941, 3])
+molecule_ids torch.Size([1, 243])
+molecule_atom_lens torch.Size([1, 243])
+atompair_inputs torch.Size([1, 72, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 243, 5])
+is_molecule_types torch.Size([1, 243, 5])
+is_molecule_mod torch.Size([1, 243, 4])
+additional_msa_feats torch.Size([1, 1, 243, 2])
+additional_token_feats torch.Size([1, 243, 33])
+templates torch.Size([1, 4, 243, 243, 108])
+msa torch.Size([1, 1, 243, 32])
+token_bonds torch.Size([1, 243, 243])
+atom_ids torch.Size([1, 1941])
+atom_parent_ids torch.Size([1, 1941])
+atompair_ids torch.Size([1, 1941, 1941])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1941, 3])
+missing_atom_mask torch.Size([1, 1941])
+molecule_atom_indices torch.Size([1, 243])
+distogram_atom_indices torch.Size([1, 243])
+atom_indices_for_frame torch.Size([1, 243, 3])
+resolved_labels torch.Size([1, 1941])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 243, 243, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 1, Accum 1 | Forward pass...
+Step 1, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 1 | Optimization...
+Step 1 | EMA update...
+Step 1 | Scheduler update...
+Step 2 | Logging...
+Step 2 | Train loss: 7.754751 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.9644 GB | max_mem_allocated: 31.1309 GB | cache_allocated: 23.8477 GB | max_cache_allocated: 31.8125 GB
+Time taken for each training step:  42.413615226745605
+Step 2, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2065, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 77, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2065])
+atom_parent_ids torch.Size([1, 2065])
+atompair_ids torch.Size([1, 2065, 2065])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2065, 3])
+missing_atom_mask torch.Size([1, 2065])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2065])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 2, Accum 1 | Forward pass...
+  Step 2, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 2 | Optimization...
+Step 2 | EMA update...
+Step 2 | Scheduler update...
+Step 3 | Logging...
+Step 3 | Train loss: 7.650951 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0226 GB | max_mem_allocated: 32.3673 GB | cache_allocated: 24.6582 GB | max_cache_allocated: 33.0449 GB
+Time taken for each training step:  46.40069532394409
+Step 3, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1000, 3])
+molecule_ids torch.Size([1, 129])
+molecule_atom_lens torch.Size([1, 129])
+atompair_inputs torch.Size([1, 38, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 129, 5])
+is_molecule_types torch.Size([1, 129, 5])
+is_molecule_mod torch.Size([1, 129, 4])
+additional_msa_feats torch.Size([1, 1, 129, 2])
+additional_token_feats torch.Size([1, 129, 33])
+templates torch.Size([1, 4, 129, 129, 108])
+msa torch.Size([1, 1, 129, 32])
+token_bonds torch.Size([1, 129, 129])
+atom_ids torch.Size([1, 1000])
+atom_parent_ids torch.Size([1, 1000])
+atompair_ids torch.Size([1, 1000, 1000])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1000, 3])
+missing_atom_mask torch.Size([1, 1000])
+molecule_atom_indices torch.Size([1, 129])
+distogram_atom_indices torch.Size([1, 129])
+atom_indices_for_frame torch.Size([1, 129, 3])
+resolved_labels torch.Size([1, 1000])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 129, 129, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 3, Accum 1 | Forward pass...
+ Step 3, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 3 | Optimization...
+Step 3 | EMA update...
+Step 3 | Scheduler update...
+Step 4 | Logging...
+Step 4 | Train loss: 7.375092 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.7523 GB | max_mem_allocated: 32.3673 GB | cache_allocated: 20.9648 GB | max_cache_allocated: 33.0449 GB
+Time taken for each training step:  37.149173974990845
+Step 4, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2094, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 78, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2094])
+atom_parent_ids torch.Size([1, 2094])
+atompair_ids torch.Size([1, 2094, 2094])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2094, 3])
+missing_atom_mask torch.Size([1, 2094])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2094])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 4, Accum 1 | Forward pass...
+Step 4, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 4 | Optimization...
+Step 4 | EMA update...
+Step 4 | Scheduler update...
+Step 5 | Logging...
+Step 5 | Train loss: 7.281291 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0305 GB | max_mem_allocated: 32.3714 GB | cache_allocated: 24.7949 GB | max_cache_allocated: 33.0703 GB
+Time taken for each training step:  12.114958047866821
+Step 5, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2115, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 79, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2115])
+atom_parent_ids torch.Size([1, 2115])
+atompair_ids torch.Size([1, 2115, 2115])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 2115, 3])
+missing_atom_mask torch.Size([1, 2115])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2115])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 5, Accum 1 | Forward pass...
+Step 5, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+ Step 5 | Optimization...
+Step 5 | EMA update...
+Step 5 | Scheduler update...
+Step 6 | Logging...
+Step 6 | Train loss: 7.223583 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0202 GB | max_mem_allocated: 32.4776 GB | cache_allocated: 24.8926 GB | max_cache_allocated: 33.2676 GB
+Time taken for each training step:  11.983614444732666
+Step 6, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1983, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 74, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 1, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+msa torch.Size([1, 1, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 1983])
+atom_parent_ids torch.Size([1, 1983])
+atompair_ids torch.Size([1, 1983, 1983])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1983, 3])
+missing_atom_mask torch.Size([1, 1983])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 6, Accum 1 | Forward pass...
+Step 6, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 6 | Optimization...
+Step 6 | EMA update...
+Step 6 | Scheduler update...
+Step 7 | Logging...
+Step 7 | Train loss: 7.276383 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.7987 GB | max_mem_allocated: 32.4776 GB | cache_allocated: 22.3770 GB | max_cache_allocated: 33.2676 GB
+Time taken for each training step:  11.413362264633179
+Step 7, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 2001, 3])
+molecule_ids torch.Size([1, 256])
+molecule_atom_lens torch.Size([1, 256])
+atompair_inputs torch.Size([1, 75, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 256, 5])
+is_molecule_types torch.Size([1, 256, 5])
+is_molecule_mod torch.Size([1, 256, 4])
+additional_msa_feats torch.Size([1, 2, 256, 2])
+additional_token_feats torch.Size([1, 256, 33])
+templates torch.Size([1, 4, 256, 256, 108])
+msa torch.Size([1, 2, 256, 32])
+token_bonds torch.Size([1, 256, 256])
+atom_ids torch.Size([1, 2001])
+atom_parent_ids torch.Size([1, 2001])
+atompair_ids torch.Size([1, 2001, 2001])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 2])
+atom_pos torch.Size([1, 2001, 3])
+missing_atom_mask torch.Size([1, 2001])
+molecule_atom_indices torch.Size([1, 256])
+distogram_atom_indices torch.Size([1, 256])
+atom_indices_for_frame torch.Size([1, 256, 3])
+resolved_labels torch.Size([1, 2001])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 256, 256, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 7, Accum 1 | Forward pass...
+Step 7, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 7 | Optimization...
+Step 7 | EMA update...
+Step 7 | Scheduler update...
+Step 8 | Logging...
+Step 8 | Train loss: 7.225167 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 17.0199 GB | max_mem_allocated: 32.4776 GB | cache_allocated: 25.0996 GB | max_cache_allocated: 33.2676 GB
+Time taken for each training step:  11.652653932571411
+Step 8, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1892, 3])
+molecule_ids torch.Size([1, 241])
+molecule_atom_lens torch.Size([1, 241])
+atompair_inputs torch.Size([1, 71, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 241, 5])
+is_molecule_types torch.Size([1, 241, 5])
+is_molecule_mod torch.Size([1, 241, 4])
+additional_msa_feats torch.Size([1, 1, 241, 2])
+additional_token_feats torch.Size([1, 241, 33])
+templates torch.Size([1, 4, 241, 241, 108])
+msa torch.Size([1, 1, 241, 32])
+token_bonds torch.Size([1, 241, 241])
+atom_ids torch.Size([1, 1892])
+atom_parent_ids torch.Size([1, 1892])
+atompair_ids torch.Size([1, 1892, 1892])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1892, 3])
+missing_atom_mask torch.Size([1, 1892])
+molecule_atom_indices torch.Size([1, 241])
+distogram_atom_indices torch.Size([1, 241])
+atom_indices_for_frame torch.Size([1, 241, 3])
+resolved_labels torch.Size([1, 1892])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 241, 241, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 8, Accum 1 | Forward pass...
+ Step 8, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 8 | Optimization...
+Step 8 | EMA update...
+Step 8 | Scheduler update...
+Step 9 | Logging...
+Step 9 | Train loss: 7.188845 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.9560 GB | max_mem_allocated: 32.4776 GB | cache_allocated: 24.4199 GB | max_cache_allocated: 33.2676 GB
+Time taken for each training step:  39.643956661224365
+Step 9, Accum 1 | Fetching training batch...
+
+
+ Input sizes:
+atom_inputs torch.Size([1, 1125, 3])
+molecule_ids torch.Size([1, 169])
+molecule_atom_lens torch.Size([1, 169])
+atompair_inputs torch.Size([1, 42, 27, 54, 5])
+additional_molecule_feats torch.Size([1, 169, 5])
+is_molecule_types torch.Size([1, 169, 5])
+is_molecule_mod torch.Size([1, 169, 4])
+additional_msa_feats torch.Size([1, 1, 169, 2])
+additional_token_feats torch.Size([1, 169, 33])
+templates torch.Size([1, 4, 169, 169, 108])
+msa torch.Size([1, 1, 169, 32])
+token_bonds torch.Size([1, 169, 169])
+atom_ids torch.Size([1, 1125])
+atom_parent_ids torch.Size([1, 1125])
+atompair_ids torch.Size([1, 1125, 1125])
+template_mask torch.Size([1, 4])
+msa_mask torch.Size([1, 1])
+atom_pos torch.Size([1, 1125, 3])
+missing_atom_mask torch.Size([1, 1125])
+molecule_atom_indices torch.Size([1, 169])
+distogram_atom_indices torch.Size([1, 169])
+atom_indices_for_frame torch.Size([1, 169, 3])
+resolved_labels torch.Size([1, 1125])
+resolution torch.Size([1])
+token_constraints torch.Size([1, 169, 169, 6])
+chains torch.Size([1, 2])
+
+
+
+Step 9, Accum 1 | Forward pass...
+ Step 9, Accum 1 | Backward pass...
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/torch/utils/checkpoint.py:1399: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with device_autocast_ctx, torch.cpu.amp.autocast(**cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+Step 9 | Optimization...
+Step 9 | EMA update...
+Step 9 | Scheduler update...
+Step 10 | Logging...
+Step 10 | Train loss: 7.320743 (step)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:141: FutureWarning: `torch.cuda.memory_cached` has been renamed to `torch.cuda.memory_reserved`
+  return torch.cuda.memory_cached(device_index)
+/u/hla/.conda/envs/fabricenv/lib/python3.10/site-packages/deepspeed/accelerator/cuda_accelerator.py:144: FutureWarning: `torch.cuda.max_memory_cached` has been renamed to `torch.cuda.max_memory_reserved`
+  return torch.cuda.max_memory_cached(device_index)
+Memory usage at start:   | mem_allocated: 16.7962 GB | max_mem_allocated: 32.4776 GB | cache_allocated: 22.4004 GB | max_cache_allocated: 33.2676 GB
+Time taken for each training step:  37.34469199180603
+Step 10, Accum 1 | Fetching training batch...

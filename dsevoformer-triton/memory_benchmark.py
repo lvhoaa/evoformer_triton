@@ -39,7 +39,6 @@ mem_usage = SynchronizedWallClockTimer.memory_usage()
 print("Memory usage after all: ", mem_usage)
 
 # Memory benchmark full (msa row wise) -- max mem allocated
-# deepspeed will have smaller mem bc of pair_bias bfloat16
 # batch4-head32-dim64-nseq1
 #     N_CTX  Triton [FP16]  deepspeed     torch
 # 0   128.0       0.2502GB  0.0236GB   0.0686GB
@@ -50,6 +49,7 @@ print("Memory usage after all: ", mem_usage)
 # 5   768.0       0.6570GB  0.2586GB   1.5042GB
 # 6  1024.0       1.1260GB  0.4072GB   2.6253GB
 # 7  2048.0       4.2520GB  1.3145GB  10.2346GB
+
 
 # torch for 384: 
 # qkv, output: 4 * 32 * 1 * 384 * 64 * 2 * 4 = 25,165,824

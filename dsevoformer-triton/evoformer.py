@@ -108,8 +108,8 @@ def _attn_fwd_inner(
             num_stages=num_stages,
             num_warps=num_warps,
         )
-        for BLOCK_SIZE_Q in [64, 128]
-        for BLOCK_SIZE_KV in [32, 64]
+        for BLOCK_SIZE_Q in [32, 64]   
+        for BLOCK_SIZE_KV in [16, 32] 
         for num_stages in ([1] if is_hip() else [3, 4, 7])
         for num_warps in [4, 8]
     ],
@@ -451,8 +451,7 @@ def _attn_bwd_dq(
             pair_bias_block = tl.load(pair_bias_block_ptr, mask= (offs_q[:, None] < SEQ_LEN) & ((blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN), other= 0.0)
             res_mask_block = tl.load(res_mask_block_ptr, mask= (blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN, other= False).broadcast_to((BLOCK_Q, BLOCK_KV))
             
-        QK_block = tl.dot(Q_block, K_T_block)
-        QK_block += pair_bias_block
+        QK_block = tl.dot(Q_block, K_T_block) + pair_bias_block
         QK_block = tl.where(res_mask_block, QK_block, get_neg_max_value(QK_block.dtype))
         P_block = tl.math.exp(QK_block - M_block)
 
@@ -760,7 +759,7 @@ class EvoformerAttention(torch.autograd.Function):
         d_pair_bias = torch.empty((BATCH_SIZE, HEAD, SEQ_LEN, SEQ_LEN), device=pair_bias.device, dtype=torch.float32).zero_()
         
         NUM_WARPS, NUM_STAGES = 4, 3
-        BLOCK_SIZE_MICRO, BLOCK_SIZE_MACRO = 32, 128 # review
+        BLOCK_SIZE_MICRO, BLOCK_SIZE_MACRO = 16, 32 # review 
         
         preprocess_grid = (triton.cdiv(SEQ_LEN, BLOCK_SIZE_MACRO), BATCH_SIZE * HEAD * N_SEQ)
         D = torch.empty_like(M)  # Shape: (BATCH_SIZE, HEAD, N_SEQ, SEQ_LEN)

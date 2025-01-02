@@ -18,6 +18,8 @@ In speed_benchmark.py, I include some profiled results at the end. The forward p
 
 I did some analysis to find out that in the backward pass, the tl.atomic_add is what causes slowdown. So I think tl.atomic_add needs a review.
 
+*Update*: I have tuned/reduced the block size in autotune configs and BLOCK_SIZE_MACRO & BLOCK_SIZE_MICRO so now the speed is better. But because Triton EvoformerAttention speed is still less than DS4Sci_EvoformerAttention, I think there will still be room for improvements. 
+
 
 ### Problem 2: Performance issue: Memory
 In memory_benchmark.py, I include profiled results at the end. Current Triton EvoformerAttention is just slightly better than PyTorch implementation. 
@@ -28,8 +30,8 @@ I have tried reducing the block size, but it didn't improve the results.
 
 
 ### Problem 3: The current kernel only works with SEQ_LEN % 128 == 0
-Update: I have fixed this one by mask-loading and mask-storing. 
-
+*Update: I have fixed this one by mask-loading and mask-storing.* 
+<!-- 
 This is because I worked with the original Flash-attention triton code on https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html, which only allows SEQ_LEN % 128==0. 
 
 I also found other flash-attn triton implementations but I don't think they fit our requirements: 
@@ -39,4 +41,4 @@ I also found other flash-attn triton implementations but I don't think they fit 
 
 That is why I decided to go with https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html. 
 
-I will try to work around by implementing mask-loading to make it fit all sequence lengths. 
+I will try to work around by implementing mask-loading to make it fit all sequence lengths.  -->
