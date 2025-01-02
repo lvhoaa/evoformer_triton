@@ -1,3 +1,4 @@
+# NOTE: only works with SEQ_LEN that is multiple of 128.
 # NOTE: investigate poor performance issue vs standard pytorch: time & memory 
 # TODO:  In our kernels, we tune the tile size for better performance. Large tile size leads to more efficient memory access while incurring register spilling; We tune the tile size to be (64, 64, 1)
 # TODO: To reduce the contention that multiple thread blocks are trying to write the same place, we schedule the thread block so that blocks executing on GPU’s multiprocessors at the same wave write to different tiles.
@@ -6,7 +7,6 @@ import torch
 import triton
 import triton.language as tl
 from deepspeed.utils.timer import SynchronizedWallClockTimer 
-
 
 def is_hip():
     return triton.runtime.driver.active.get_current_target().backend == "hip"
@@ -31,13 +31,8 @@ def _attn_fwd_inner(
     res_mask_block_ptr,
     pair_bias_block_ptr,
     block_index_q,
-    stride_K_seq,
-    stride_V_seq,
     stride_mask_seq,
-    stride_pair_bias_seq2,
     softmax_scale,
-    EVEN_Q: tl.constexpr,
-    EVEN_KV: tl.constexpr,
     BLOCK_SIZE_Q: tl.constexpr,
     BLOCK_SIZE_KV: tl.constexpr,
     STAGE: tl.constexpr,
@@ -46,6 +41,9 @@ def _attn_fwd_inner(
     SEQ_LEN: tl.constexpr,
 ):
     lo, hi = 0, SEQ_LEN
+
+    K_block_ptr = tl.advance(K_block_ptr, (0, lo))
+    V_block_ptr = tl.advance(V_block_ptr, (lo, 0))
     
     Q_block = Q_block * tl.full((1,), softmax_scale, dtype=Q_block.dtype)
 
@@ -55,16 +53,9 @@ def _attn_fwd_inner(
         start_kv = tl.multiple_of(start_kv, BLOCK_SIZE_KV)
 
         # -- compute qk ----
-        if EVEN_Q & EVEN_KV:
-            K_block = tl.load(K_block_ptr)
-            V_block = tl.load(V_block_ptr)
-            pair_bias_block = tl.load(pair_bias_block_ptr)
-            res_mask_block = tl.load(res_mask_block_ptr).broadcast_to((BLOCK_SIZE_Q, BLOCK_SIZE_KV))
-        else:
-            K_block = tl.load(K_block_ptr, mask= (start_kv + offs_kv)[None, :] < SEQ_LEN, other=0.0)
-            V_block = tl.load(V_block_ptr, mask= (start_kv + offs_kv)[:, None] < SEQ_LEN, other=0.0)
-            pair_bias_block = tl.load(pair_bias_block_ptr, mask= (offs_q[:, None] < SEQ_LEN) & ((start_kv + offs_kv)[None, :] < SEQ_LEN), other=0.0)
-            res_mask_block = tl.load(res_mask_block_ptr, mask=(start_kv + offs_kv)[None, :] < SEQ_LEN, other=False).broadcast_to((BLOCK_SIZE_Q, BLOCK_SIZE_KV)) 
+        K_block = tl.load(K_block_ptr)
+        pair_bias_block = tl.load(pair_bias_block_ptr)
+        res_mask_block = tl.load(res_mask_block_ptr).broadcast_to((BLOCK_SIZE_Q, BLOCK_SIZE_KV))
         
         QK_block = tl.dot(Q_block, K_block) + pair_bias_block
         QK_block = tl.where(res_mask_block, QK_block, get_neg_max_value(QK_block.dtype))
@@ -82,6 +73,7 @@ def _attn_fwd_inner(
         # Apply the correction factor to the previous l_i and add the new l_ij
         l_i = l_i * alpha + l_ij
 
+        V_block = tl.load(V_block_ptr)
         P_block = P_block.to(V_block.dtype)
         # This computes the following: O_new = P x V + O_old * alpha
         O_block = O_block * alpha[:, None]
@@ -90,12 +82,9 @@ def _attn_fwd_inner(
         m_i = m_ij
 
         # Move to the next block of K and V
-        # V_block_ptr = tl.advance(V_block_ptr, (BLOCK_SIZE_KV, 0))
-        V_block_ptr += BLOCK_SIZE_KV * stride_V_seq
-        # K_block_ptr = tl.advance(K_block_ptr, (0, BLOCK_SIZE_KV))
-        K_block_ptr += BLOCK_SIZE_KV * stride_K_seq
-        # pair_bias_block_ptr = tl.advance(pair_bias_block_ptr, (0, BLOCK_SIZE_KV))
-        pair_bias_block_ptr += BLOCK_SIZE_KV * stride_pair_bias_seq2 
+        V_block_ptr = tl.advance(V_block_ptr, (BLOCK_SIZE_KV, 0))
+        K_block_ptr = tl.advance(K_block_ptr, (0, BLOCK_SIZE_KV))
+        pair_bias_block_ptr = tl.advance(pair_bias_block_ptr, (0, BLOCK_SIZE_KV))
         res_mask_block_ptr += BLOCK_SIZE_KV * stride_mask_seq
         
     return O_block, l_i, m_i
@@ -114,12 +103,6 @@ def _attn_fwd_inner(
         for num_warps in [4, 8]
     ],
     key=["SEQ_LEN", "DIM"],
-)
-@triton.heuristics(
-    {
-        "EVEN_Q": lambda args: args["SEQ_LEN"] % args["BLOCK_SIZE_Q"] == 0,
-        "EVEN_KV": lambda args: args["SEQ_LEN"] % args["BLOCK_SIZE_KV"] == 0,
-    }
 )
 @triton.jit
 def _attn_fwd(
@@ -169,8 +152,6 @@ def _attn_fwd(
     N_SEQ: tl.constexpr, 
     SEQ_LEN: tl.constexpr,
     DIM: tl.constexpr,
-    EVEN_Q: tl.constexpr,
-    EVEN_KV: tl.constexpr,
     BLOCK_SIZE_Q: tl.constexpr,
     BLOCK_SIZE_KV: tl.constexpr,
     STAGE: tl.constexpr,
@@ -185,66 +166,67 @@ def _attn_fwd(
     index_msa = index_batch_head_msa % N_SEQ
     index_batch = index_batch_head // HEAD
     index_head = index_batch_head % HEAD
-        
-    qvk_offset = index_batch * stride_Q_batch + index_head * stride_Q_head + index_msa * stride_Q_msa
+    
+    qvk_offset = (
+        index_batch.to(tl.int64) * stride_Q_batch
+        + index_head.to(tl.int64) * stride_Q_head
+        + index_msa.to(tl.int64) * stride_Q_msa
+    )
+
+    Q_block_ptr = tl.make_block_ptr(
+        base=Q + qvk_offset,
+        shape=(SEQ_LEN, DIM),
+        strides=(stride_Q_seq, stride_Q_dim),
+        offsets=(block_index_q * BLOCK_SIZE_Q, 0),
+        block_shape=(BLOCK_SIZE_Q, DIM),
+        order=(1, 0),
+    )
+
+    V_block_ptr = tl.make_block_ptr(
+        base=V + qvk_offset,
+        shape=(SEQ_LEN, DIM),
+        strides=(stride_V_seq, stride_V_dim),
+        offsets=(0, 0),
+        block_shape=(BLOCK_SIZE_KV, DIM),
+        order=(1, 0),
+    )
+
+    K_block_ptr = tl.make_block_ptr(
+        base=K + qvk_offset,
+        shape=(DIM, SEQ_LEN),
+        strides=(
+            stride_K_dim,
+            stride_K_seq,
+        ),  # We invert the strides w.r.t Q, so we transpose the matrix
+        offsets=(0, 0),
+        block_shape=(DIM, BLOCK_SIZE_KV),
+        order=(0, 1),
+    )
+    
+    pair_bias_block_ptr = tl.make_block_ptr(
+        base=pair_bias + (index_batch.to(tl.int64) * stride_pair_bias_batch + index_head.to(tl.int64) * stride_pair_bias_head),
+        shape=(SEQ_LEN, SEQ_LEN),
+        strides=(stride_pair_bias_seq1, stride_pair_bias_seq2),
+        offsets=(block_index_q * BLOCK_SIZE_Q, 0),
+        block_shape=(BLOCK_SIZE_Q, BLOCK_SIZE_KV),
+        order=(1, 0),
+    )
+
+    O_block_ptr = tl.make_block_ptr(
+        base=O + qvk_offset,
+        shape=(SEQ_LEN, DIM),
+        strides=(stride_O_seq, stride_O_dim),
+        offsets=(block_index_q * BLOCK_SIZE_Q, 0),
+        block_shape=(BLOCK_SIZE_Q, DIM),
+        order=(1, 0),
+    )
+
+    # offs_q: the offsets for the tokens in the Q to process
     offs_q = block_index_q * BLOCK_SIZE_Q + tl.arange(0, BLOCK_SIZE_Q)
+    # offs_kv: the offsets for the tokens in the K and V sequence to process
     offs_kv = tl.arange(0, BLOCK_SIZE_KV)
-    offs_d = tl.arange(0, DIM)
-    
-    # Q_block_ptr = tl.make_block_ptr(
-    #     base=Q + qvk_offset,
-    #     shape=(SEQ_LEN, DIM),
-    #     strides=(stride_Q_seq, stride_Q_dim),
-    #     offsets=(block_index_q * BLOCK_SIZE_Q, 0),
-    #     block_shape=(BLOCK_SIZE_Q, DIM),
-    #     order=(1, 0),
-    # )
-    Q_block_ptr = (Q + qvk_offset + (offs_q[:, None] * stride_Q_seq + offs_d[None, :]))
-
-    # V_block_ptr = tl.make_block_ptr(
-    #     base=V + qvk_offset,
-    #     shape=(SEQ_LEN, DIM),
-    #     strides=(stride_V_seq, stride_V_dim),
-    #     offsets=(0, 0),
-    #     block_shape=(BLOCK_SIZE_KV, DIM),
-    #     order=(1, 0),
-    # )
-    V_block_ptr = (V + qvk_offset + (offs_kv[:, None] * stride_V_seq + offs_d[None, :]))
-
-    # K_block_ptr = tl.make_block_ptr(
-    #     base=K + qvk_offset,
-    #     shape=(DIM, SEQ_LEN),
-    #     strides=(
-    #         stride_K_dim,
-    #         stride_K_seq,
-    #     ),  # We invert the strides w.r.t Q, so we transpose the matrix
-    #     offsets=(0, 0),
-    #     block_shape=(DIM, BLOCK_SIZE_KV),
-    #     order=(0, 1),
-    # )
-    K_block_ptr = (K + qvk_offset + (offs_kv[None, :] * stride_K_seq + offs_d[:, None]))
-    
-    # pair_bias_block_ptr = tl.make_block_ptr(
-    #     base=pair_bias + (index_batch.to(tl.int64) * stride_pair_bias_batch + index_head.to(tl.int64) * stride_pair_bias_head),
-    #     shape=(SEQ_LEN, SEQ_LEN),
-    #     strides=(stride_pair_bias_seq1, stride_pair_bias_seq2),
-    #     offsets=(block_index_q * BLOCK_SIZE_Q, 0),
-    #     block_shape=(BLOCK_SIZE_Q, BLOCK_SIZE_KV),
-    #     order=(1, 0),
-    # )
-    pair_bias_block_ptr = (pair_bias + index_batch * stride_pair_bias_batch + index_head * stride_pair_bias_head + (offs_q[:, None] * stride_pair_bias_seq1 + offs_kv[None, :] * stride_pair_bias_seq2))
-
-    # O_block_ptr = tl.make_block_ptr(
-    #     base=O + qvk_offset,
-    #     shape=(SEQ_LEN, DIM),
-    #     strides=(stride_O_seq, stride_O_dim),
-    #     offsets=(block_index_q * BLOCK_SIZE_Q, 0),
-    #     block_shape=(BLOCK_SIZE_Q, DIM),
-    #     order=(1, 0),
-    # )
-    O_block_ptr = (O + qvk_offset + (offs_q[:, None] * stride_O_seq + offs_d[None, :]))
-
-    res_mask_block_ptr = res_mask + (index_batch * stride_mask_batch + index_msa * stride_mask_msa) + (offs_kv[None, :] * stride_mask_seq)
+        
+    res_mask_block_ptr = res_mask + (index_batch.to(tl.int64) * stride_mask_batch + index_msa.to(tl.int64) * stride_mask_msa) + (offs_kv[None, :] * stride_mask_seq)
 
     # m_i: the running maximum. We have one for each query
     m_i = tl.zeros([BLOCK_SIZE_Q], dtype=tl.float32) - float("inf")
@@ -254,10 +236,7 @@ def _attn_fwd(
     O_block = tl.zeros([BLOCK_SIZE_Q, DIM], dtype=tl.float32)
 
     # load the blocks of Q: it will stay in SRAM throughout
-    if EVEN_Q & EVEN_KV:
-        Q_block = tl.load(Q_block_ptr)
-    else:
-        Q_block = tl.load(Q_block_ptr, mask= offs_q[:, None] < SEQ_LEN, other = 0.0)
+    Q_block = tl.load(Q_block_ptr)
     
     O_block, l_i, m_i = _attn_fwd_inner(
         O_block,
@@ -269,13 +248,8 @@ def _attn_fwd(
         res_mask_block_ptr,
         pair_bias_block_ptr,
         block_index_q,
-        stride_K_seq,
-        stride_V_seq,
         stride_mask_seq,
-        stride_pair_bias_seq2,
         softmax_scale,
-        EVEN_Q,
-        EVEN_KV,
         BLOCK_SIZE_Q,
         BLOCK_SIZE_KV,
         4 - STAGE,
@@ -289,15 +263,10 @@ def _attn_fwd(
         l_i
     )  # This is needed to compute the logsumexp for the backwards pass
     O_block = O_block / l_i[:, None]
-    O_block = O_block.to(O.type.element_ty)
     m_ptrs = M + index_batch_head_msa * SEQ_LEN + offs_q
-        
-    if EVEN_Q:
-        tl.store(O_block_ptr, O_block)
-        tl.store(m_ptrs, m_i)
-    else:
-        tl.store(O_block_ptr, O_block, mask= offs_q[:, None] < SEQ_LEN)
-        tl.store(m_ptrs, m_i, mask=offs_q < SEQ_LEN) 
+    tl.store(m_ptrs, m_i)
+    tl.store(O_block_ptr, O_block.to(O.type.element_ty))
+
 
 @triton.jit
 def _attn_bwd_preprocess(
@@ -314,19 +283,23 @@ def _attn_bwd_preprocess(
     offs_dim = tl.arange(0, DIM)
     # Load a single block of BLOCK_SIZE_Q rows of O
     O_block = tl.load(
-        O + index_batch_head_msa * SEQ_LEN * DIM + offs_q[:, None] * DIM + offs_dim[None, :],
-        mask = offs_q[:, None] < SEQ_LEN, other= 0.0
+        O
+        + index_batch_head_msa * SEQ_LEN * DIM 
+        + offs_q[:, None] * DIM
+        + offs_dim[None, :]
     )
     # Load a single block of BLOCK_SIZE_Q rows of dO
     dO_block = tl.load(
-        dO + index_batch_head_msa * SEQ_LEN * DIM + offs_q[:, None] * DIM + offs_dim[None, :],
-        mask= offs_q[:, None] < SEQ_LEN, other= 0.0
+        dO
+        + index_batch_head_msa * SEQ_LEN * DIM 
+        + offs_q[:, None] * DIM
+        + offs_dim[None, :]
     ).to(tl.float32)
     # Compute the D block
     D_block = tl.sum(dO_block * O_block, axis=1)  # Shape: (BLOCK_SIZE_Q,)
     # Store the D block
     D_block_ptrs = D + index_batch_head_msa * SEQ_LEN + offs_q
-    tl.store(D_block_ptrs, D_block, mask= offs_q < SEQ_LEN)
+    tl.store(D_block_ptrs, D_block)
 
 
 @triton.jit
@@ -348,6 +321,7 @@ def _attn_bwd_dq(
     stride_head,
     stride_msa,
     stride_seq,
+    stride_dim,
     stride_pair_bias_batch,
     stride_pair_bias_head,
     stride_pair_bias_seq1,
@@ -362,8 +336,6 @@ def _attn_bwd_dq(
     HEAD,
     N_SEQ,
     SEQ_LEN,
-    EVEN_Q: tl.constexpr, 
-    EVEN_KV: tl.constexpr,
     BLOCK_Q: tl.constexpr,
     BLOCK_KV: tl.constexpr,
     DIM: tl.constexpr,
@@ -398,69 +370,57 @@ def _attn_bwd_dq(
     index_block_kv = tl.program_id(0)
     offs_q = index_block_kv * BLOCK_Q + tl.arange(0, BLOCK_Q)
 
+    Q_block = tl.load(Q + offs_q[:, None] * stride_seq + offs_dim[None, :] * stride_dim)
     dQ_block = tl.zeros([BLOCK_Q, DIM], dtype=tl.float32)
-    
-    if EVEN_Q & EVEN_KV:
-        Q_block = tl.load(Q + offs_q[:, None] * stride_seq + offs_dim[None, :])
-        dO_block = tl.load(dO + offs_q[:, None] * stride_seq + offs_dim[None, :])
-        M_block = tl.load(M + offs_q)
-        Di = tl.load(D + offs_q)
-    else:
-        Q_block = tl.load(Q + offs_q[:, None] * stride_seq + offs_dim[None, :], mask= offs_q[:, None] < SEQ_LEN, other= 0.0)
-        dO_block = tl.load(dO + offs_q[:, None] * stride_seq + offs_dim[None, :], mask= offs_q[:, None] < SEQ_LEN, other= 0.0)
-        M_block = tl.load(M + offs_q, mask= offs_q < SEQ_LEN, other= 0.0)
-        Di = tl.load(D + offs_q, mask = offs_q < SEQ_LEN, other= 0.0)
-    
+    dO_block = tl.load(dO + offs_q[:, None] * stride_seq + offs_dim[None, :] * stride_dim)
+
+    M_block = tl.load(M + offs_q)
     M_block = M_block[:, None]
     
-    # pair_bias_block_ptr = tl.make_block_ptr(
-    #     base=pair_bias + (index_batch * stride_pair_bias_batch + index_head * stride_pair_bias_head),
-    #     shape=(SEQ_LEN, SEQ_LEN),
-    #     strides=(stride_pair_bias_seq1, stride_pair_bias_seq2),
-    #     offsets=(index_block_kv * BLOCK_Q, 0),
-    #     block_shape=(BLOCK_Q, BLOCK_KV),
-    #     order=(1, 0),
-    # )
-
+    pair_bias_block_ptr = tl.make_block_ptr(
+        base=pair_bias + (index_batch.to(tl.int64) * stride_pair_bias_batch + index_head.to(tl.int64) * stride_pair_bias_head),
+        shape=(SEQ_LEN, SEQ_LEN),
+        strides=(stride_pair_bias_seq1, stride_pair_bias_seq2),
+        offsets=(index_block_kv * BLOCK_Q, 0),
+        block_shape=(BLOCK_Q, BLOCK_KV),
+        order=(1, 0),
+    )
     offs_kv = tl.arange(0, BLOCK_KV)
-    pair_bias_block_ptr = pair_bias + (index_batch * stride_pair_bias_batch + index_head * stride_pair_bias_head) + offs_q[:, None] * stride_pair_bias_seq1 + offs_kv[None, :] * stride_pair_bias_seq2 
-
+    
     assert d_pair_bias.is_contiguous()
     d_pair_bias_block_ptr = d_pair_bias + (index_batch * stride_d_pair_bias_batch + index_head * stride_d_pair_bias_head).to(tl.int64) + (offs_q[:, None] * stride_d_pair_bias_seq1) + (offs_kv[None, :] * stride_d_pair_bias_seq2)
 
-    res_mask_block_ptr = res_mask + (index_batch * stride_mask_batch + index_msa * stride_mask_msa) + (offs_kv[None, :] * stride_mask_seq)
+    res_mask_block_ptr = res_mask + (index_batch.to(tl.int64) * stride_mask_batch + index_msa.to(tl.int64) * stride_mask_msa) + (offs_kv[None, :] * stride_mask_seq)
 
     # We access the K and V as transposed blocks
-    kT_ptrs = K + offs_kv[None, :] * stride_seq + offs_dim[:, None] 
-    vT_ptrs = V + offs_kv[None, :] * stride_seq + offs_dim[:, None] 
-    
+    kT_ptrs = K + offs_kv[None, :] * stride_seq + offs_dim[:, None] * stride_dim
+    vT_ptrs = V + offs_kv[None, :] * stride_seq + offs_dim[:, None] * stride_dim
+
+    Di = tl.load(D + offs_q)
+
     Q_block = Q_block * tl.full((1,), softmax_scale, dtype=Q_block.dtype)
     
     curr_kv = 0
-    num_steps = (SEQ_LEN + BLOCK_KV - 1) // BLOCK_KV 
+    num_steps = SEQ_LEN // BLOCK_KV
     
     for blk_idx in range(num_steps):
-        if EVEN_Q & EVEN_KV:
-            K_T_block = tl.load(kT_ptrs)
-            V_T_block = tl.load(vT_ptrs)
-            pair_bias_block = tl.load(pair_bias_block_ptr)
-            res_mask_block = tl.load(res_mask_block_ptr).broadcast_to((BLOCK_Q, BLOCK_KV))
-        else:
-            K_T_block = tl.load(kT_ptrs, mask= (blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN, other= 0.0)
-            V_T_block = tl.load(vT_ptrs, mask= (blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN, other= 0.0)
-            pair_bias_block = tl.load(pair_bias_block_ptr, mask= (offs_q[:, None] < SEQ_LEN) & ((blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN), other= 0.0)
-            res_mask_block = tl.load(res_mask_block_ptr, mask= (blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN, other= False).broadcast_to((BLOCK_Q, BLOCK_KV))
-            
-        QK_block = tl.dot(Q_block, K_T_block)
-        QK_block += pair_bias_block
+        K_T_block = tl.load(kT_ptrs)
+        V_T_block = tl.load(vT_ptrs)
+        pair_bias_block = tl.load(pair_bias_block_ptr)
+        res_mask_block = tl.load(res_mask_block_ptr).broadcast_to((BLOCK_Q, BLOCK_KV))
+        QK_block = tl.dot(Q_block, K_T_block) + pair_bias_block
+        
         QK_block = tl.where(res_mask_block, QK_block, get_neg_max_value(QK_block.dtype))
+        
         P_block = tl.math.exp(QK_block - M_block)
 
         # Compute dP and dS.
         dP_block = tl.dot(dO_block, V_T_block).to(tl.float32)
         dS_block = P_block * (dP_block - Di[:, None])
+        
         # Update d_pair_bias atomic add with float32 precision 
-        tl.atomic_add(d_pair_bias_block_ptr, dS_block, mask=(offs_q[:, None] < SEQ_LEN) & ((blk_idx * BLOCK_KV + offs_kv)[None, :] < SEQ_LEN)) 
+        tl.atomic_add(d_pair_bias_block_ptr, dS_block)
+        
         dS_block = dS_block.to(K_T_block.dtype)
         # Compute dQ.
         # NOTE: We need to de-scale dq in the end, because kT was pre-scaled.
@@ -469,16 +429,12 @@ def _attn_bwd_dq(
         curr_kv += BLOCK_KV
         kT_ptrs += BLOCK_KV * stride_seq
         vT_ptrs += BLOCK_KV * stride_seq
-        # pair_bias_block_ptr = tl.advance(pair_bias_block_ptr, (0, BLOCK_KV))
-        pair_bias_block_ptr += BLOCK_KV * stride_pair_bias_seq2
+        pair_bias_block_ptr = tl.advance(pair_bias_block_ptr, (0, BLOCK_KV))
         d_pair_bias_block_ptr += BLOCK_KV  * stride_d_pair_bias_seq2
         res_mask_block_ptr += BLOCK_KV * stride_mask_seq
 
-    dQ_block_ptrs = dQ + offs_q[:, None] * stride_seq + offs_dim[None, :]
-    if EVEN_Q & EVEN_KV:
-        tl.store(dQ_block_ptrs, dQ_block)
-    else:
-        tl.store(dQ_block_ptrs, dQ_block, mask= offs_q[:, None] < SEQ_LEN)
+    dQ_block_ptrs = dQ + offs_q[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+    tl.store(dQ_block_ptrs, dQ_block)
 
 
 @triton.jit
@@ -499,6 +455,7 @@ def _attn_bwd_dk_dv(
     stride_head,
     stride_msa,
     stride_seq,
+    stride_dim,
     
     stride_pair_bias_batch,
     stride_pair_bias_head,
@@ -512,8 +469,6 @@ def _attn_bwd_dk_dv(
     HEAD,
     N_SEQ, 
     SEQ_LEN,
-    EVEN_Q: tl.constexpr,
-    EVEN_KV: tl.constexpr,
     BLOCK_Q: tl.constexpr,
     BLOCK_KV: tl.constexpr,
     DIM: tl.constexpr,
@@ -529,6 +484,7 @@ def _attn_bwd_dk_dv(
     offset_batch_head_msa_seq = (index_batch_head_msa * SEQ_LEN).to(tl.int64)
 
     # Make sure the pointers are in the right place w.r.t batch and head
+    # The reason we don't access the blocks through make_block_ptr is because we need to use the range of offsets to apply the masking
     Q += offset_batch_head_msa
     K += offset_batch_head_msa
     V += offset_batch_head_msa
@@ -545,22 +501,19 @@ def _attn_bwd_dk_dv(
 
     index_block_kv = tl.program_id(0)
     offs_kv = index_block_kv * BLOCK_KV + tl.arange(0, BLOCK_KV)
-    offs_q = tl.arange(0, BLOCK_Q)
 
     dK_block = tl.zeros([BLOCK_KV, DIM], dtype=tl.float32)
     dV_block = tl.zeros([BLOCK_KV, DIM], dtype=tl.float32)
 
-    res_mask_block_ptr = res_mask + (index_batch * stride_mask_batch + index_msa * stride_mask_msa) + offs_kv[None, :] * stride_mask_seq
-    
     # load K and V: they stay in SRAM throughout the inner loop.
-    if EVEN_Q & EVEN_KV:
-        K_block = tl.load(K + offs_kv[:, None] * stride_seq + offs_dim[None, :])  # Shape: (BLOCK_KV, DIM)
-        V_block = tl.load(V + offs_kv[:, None] * stride_seq + offs_dim[None, :])  # Shape: (BLOCK_KV, DIM)
-        res_mask_T_block = tl.trans(tl.load(res_mask_block_ptr)).broadcast_to((BLOCK_KV, BLOCK_Q)) 
-    else:
-        K_block = tl.load(K + offs_kv[:, None] * stride_seq + offs_dim[None, :], mask= offs_kv[:, None] < SEQ_LEN, other= 0.0)
-        V_block = tl.load(V + offs_kv[:, None] * stride_seq + offs_dim[None, :], mask= offs_kv[:, None] < SEQ_LEN, other= 0.0)      
-        res_mask_T_block = tl.trans(tl.load(res_mask_block_ptr, mask=offs_kv[None, :] < SEQ_LEN, other=False)).broadcast_to((BLOCK_KV, BLOCK_Q)) 
+    K_block = tl.load(
+        K + offs_kv[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+    )  # Shape: (BLOCK_KV, DIM)
+    V_block = tl.load(
+        V + offs_kv[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+    )  # Shape: (BLOCK_KV, DIM)
+    
+    offs_q = tl.arange(0, BLOCK_Q)
     
     # pointer to tranposed pair bias
     pair_bias_T_block_ptr = pair_bias + (index_batch.to(tl.int64) * stride_pair_bias_batch + index_head.to(tl.int64) * stride_pair_bias_head) + offs_q[None, :] * stride_pair_bias_seq1 + offs_kv[:, None] * stride_pair_bias_seq2
@@ -570,32 +523,24 @@ def _attn_bwd_dk_dv(
     # q_ptrs = Q + offs_q[:, None] * stride_seq + offs_dim[None, :] * stride_dim
     # qT_ptrs = tl.trans(q_ptrs)
     # We point to the first BLOCK_Q rows of Q for both the qT and dO pointers, inside the for loop we will move forward by BLOCK_Q rows at each iteration.
-    qT_ptrs = Q + offs_q[None, :] * stride_seq + offs_dim[:, None] 
-    dO_ptrs = dO + offs_q[:, None] * stride_seq + offs_dim[None, :] 
+    qT_ptrs = Q + offs_q[None, :] * stride_seq + offs_dim[:, None] * stride_dim
+    dO_ptrs = dO + offs_q[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+
+    res_mask_block_ptr = res_mask + (index_batch.to(tl.int64) * stride_mask_batch + index_msa.to(tl.int64) * stride_mask_msa) + offs_kv[None, :] * stride_mask_seq
+    res_mask_T_block = tl.trans(tl.load(res_mask_block_ptr)).broadcast_to((BLOCK_KV, BLOCK_Q)) # review 
 
     K_block = K_block * tl.full((1,), softmax_scale, dtype=K_block.dtype)
     
     curr_q = 0
-    num_steps = (SEQ_LEN + BLOCK_Q - 1) // BLOCK_Q 
-    
+    num_steps = SEQ_LEN // BLOCK_Q
     for blk_idx in range(num_steps):
+        # Load a block of Q
+        qT_block = tl.load(qT_ptrs)
         # Load the logsumexp values for the queries in the current block
         offs_q = curr_q + tl.arange(0, BLOCK_Q)
-        
-        if EVEN_Q & EVEN_KV:
-            # Load a block of Q
-            qT_block = tl.load(qT_ptrs)
-            m = tl.load(M + offs_q)
-            pair_bias_T_block = tl.load(pair_bias_T_block_ptr)
-            dO_block = tl.load(dO_ptrs)
-            Di = tl.load(D + offs_q)
-        else:
-            qT_block = tl.load(qT_ptrs, mask= offs_q[None, :] < SEQ_LEN, other= 0.0)
-            m = tl.load(M + offs_q, mask = offs_q < SEQ_LEN, other= 0.0) 
-            pair_bias_T_block = tl.load(pair_bias_T_block_ptr, mask= (offs_q[None, :] < SEQ_LEN) & (offs_kv[:, None] < SEQ_LEN), other = 0.0)
-            dO_block = tl.load(dO_ptrs, mask= offs_q[:, None] < SEQ_LEN, other= 0.0)
-            Di = tl.load(D + offs_q, mask= offs_q < SEQ_LEN, other= 0.0)
-            
+        m = tl.load(M + offs_q)
+        pair_bias_T_block = tl.load(pair_bias_T_block_ptr)
+
         # This gives us (QK^T)^T = (K^T)^T(Q^T) = K(Q^T) = P^T
         QK_T_block = tl.dot(K_block, qT_block) + pair_bias_T_block
         
@@ -604,9 +549,13 @@ def _attn_bwd_dk_dv(
                 
         # We apply the softmax by using the logsumexp trick
         P_T_block = tl.math.exp(QK_T_block - m[None, :])
-        
+
+        dO_block = tl.load(dO_ptrs)
         # According to the formula: dV_new = dV_old + P^T x dO, where x is the matrix multiplication
         dV_block += tl.dot(P_T_block.to(K_block.dtype), dO_block)
+
+        # Delta = rowsum(O * dO) where * is the element-wise product
+        Di = tl.load(D + offs_q)
 
         # dP = dO x V^T, so dP^T = V x dO^T
         # Where x is the matrix multiplication
@@ -624,16 +573,13 @@ def _attn_bwd_dk_dv(
         dO_ptrs += BLOCK_Q * stride_seq
         pair_bias_T_block_ptr += BLOCK_Q * stride_pair_bias_seq1
 
-    # Write back dV & dK
-    dV_block_ptrs = dV + offs_kv[:, None] * stride_seq + offs_dim[None, :] 
-    dK_block_ptrs = dK + offs_kv[:, None] * stride_seq + offs_dim[None, :] 
+    # Write back dV.
+    dV_block_ptrs = dV + offs_kv[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+    tl.store(dV_block_ptrs, dV_block)
 
-    if EVEN_Q & EVEN_KV:
-        tl.store(dV_block_ptrs, dV_block)
-        tl.store(dK_block_ptrs, dK_block)
-    else:
-        tl.store(dV_block_ptrs, dV_block, mask= offs_kv[:, None] < SEQ_LEN)
-        tl.store(dK_block_ptrs, dK_block, mask= offs_kv[:, None] < SEQ_LEN)
+    # Write back dK.
+    dK_block_ptrs = dK + offs_kv[:, None] * stride_seq + offs_dim[None, :] * stride_dim
+    tl.store(dK_block_ptrs, dK_block)
 
 
 class EvoformerAttention(torch.autograd.Function):
@@ -642,8 +588,8 @@ class EvoformerAttention(torch.autograd.Function):
         # Q, K, V: [Batch, N_seq, N_res, Head, Dim]
         # res_mask: [Batch, N_seq, 1, 1, N_res]
         # pair_bias: [Batch, 1, Head, N_res, N_res]
-        # mem_usage = SynchronizedWallClockTimer.memory_usage()
-        # print("Memory usage after init: ", mem_usage)
+        mem_usage = SynchronizedWallClockTimer.memory_usage()
+        print("Memory usage after init: ", mem_usage)
         
         DIM_Q, DIM_K, DIM_V = Q.shape[-1], K.shape[-1], V.shape[-1]
         assert DIM_Q == DIM_K and DIM_K == DIM_V
@@ -677,8 +623,8 @@ class EvoformerAttention(torch.autograd.Function):
             (BATCH_SIZE, HEAD, N_SEQ, SEQ_LEN), device=Q.device, dtype=torch.float32
         )
         
-        # mem_usage = SynchronizedWallClockTimer.memory_usage()
-        # print("Memory usage after init O and M: ", mem_usage)
+        mem_usage = SynchronizedWallClockTimer.memory_usage()
+        print("Memory usage after init O and M: ", mem_usage)
 
         _attn_fwd[grid](
             Q=Q,
@@ -731,8 +677,8 @@ class EvoformerAttention(torch.autograd.Function):
             **extra_kern_args
         )
         
-        # mem_usage = SynchronizedWallClockTimer.memory_usage()
-        # print("Memory usage after fwd pass: ", mem_usage)
+        mem_usage = SynchronizedWallClockTimer.memory_usage()
+        print("Memory usage after fwd pass: ", mem_usage)
 
         ctx.save_for_backward(Q, K, V, res_mask, pair_bias, O, M)
         ctx.grid = grid
@@ -757,12 +703,14 @@ class EvoformerAttention(torch.autograd.Function):
         dQ = torch.empty_like(Q)
         dK = torch.empty_like(K)
         dV = torch.empty_like(V)
+        # review: torch.float32 -- is it initialized this way # review: torch.zeros
         d_pair_bias = torch.empty((BATCH_SIZE, HEAD, SEQ_LEN, SEQ_LEN), device=pair_bias.device, dtype=torch.float32).zero_()
         
         NUM_WARPS, NUM_STAGES = 4, 3
-        BLOCK_SIZE_MICRO, BLOCK_SIZE_MACRO = 32, 128 # review
+        BLOCK_SIZE_MICRO, BLOCK_SIZE_MACRO = 32, 128
+        assert SEQ_LEN % 128 == 0, "Sequence length must be divided by 128"
         
-        preprocess_grid = (triton.cdiv(SEQ_LEN, BLOCK_SIZE_MACRO), BATCH_SIZE * HEAD * N_SEQ)
+        preprocess_grid = (SEQ_LEN // BLOCK_SIZE_MACRO, BATCH_SIZE * HEAD * N_SEQ)
         D = torch.empty_like(M)  # Shape: (BATCH_SIZE, HEAD, N_SEQ, SEQ_LEN)
 
         # Compute all the elements Di
@@ -775,9 +723,7 @@ class EvoformerAttention(torch.autograd.Function):
             DIM=DIM,
         )
 
-        grid = (triton.cdiv(SEQ_LEN, BLOCK_SIZE_MACRO), 1, BATCH_SIZE * HEAD * N_SEQ)
-        EVEN_Q = SEQ_LEN % BLOCK_SIZE_MACRO == 0
-        EVEN_KV = SEQ_LEN % BLOCK_SIZE_MICRO == 0 
+        grid = (SEQ_LEN // BLOCK_SIZE_MACRO, 1, BATCH_SIZE * HEAD * N_SEQ)
 
         stage = 1
 
@@ -799,6 +745,7 @@ class EvoformerAttention(torch.autograd.Function):
             stride_head=Q.stride(1),
             stride_msa=Q.stride(2),
             stride_seq=Q.stride(3),
+            stride_dim=Q.stride(4),
             stride_pair_bias_batch=pair_bias.stride(0),
             stride_pair_bias_head=pair_bias.stride(1),
             stride_pair_bias_seq1=pair_bias.stride(3),
@@ -811,8 +758,6 @@ class EvoformerAttention(torch.autograd.Function):
             HEAD=HEAD,
             N_SEQ=N_SEQ,
             SEQ_LEN=SEQ_LEN,
-            EVEN_Q=EVEN_Q, 
-            EVEN_KV=EVEN_KV,
             BLOCK_Q=BLOCK_SIZE_MICRO,
             BLOCK_KV=BLOCK_SIZE_MACRO,
             DIM=ctx.DIM,
@@ -840,6 +785,7 @@ class EvoformerAttention(torch.autograd.Function):
             stride_head=Q.stride(1),
             stride_msa=Q.stride(2),
             stride_seq=Q.stride(3),
+            stride_dim=Q.stride(4),
             stride_pair_bias_batch=pair_bias.stride(0),
             stride_pair_bias_head=pair_bias.stride(1),
             stride_pair_bias_seq1=pair_bias.stride(3),
@@ -854,8 +800,6 @@ class EvoformerAttention(torch.autograd.Function):
             HEAD=HEAD,
             N_SEQ=N_SEQ,
             SEQ_LEN=SEQ_LEN,
-            EVEN_Q=EVEN_Q, 
-            EVEN_KV=EVEN_KV,
             BLOCK_Q=BLOCK_SIZE_MACRO,
             BLOCK_KV=BLOCK_SIZE_MICRO,
             DIM=ctx.DIM,
